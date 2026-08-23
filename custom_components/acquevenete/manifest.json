@@ -1,0 +1,12 @@
+{
+  "domain": "acquevenete",
+  "name": "Acquevenete",
+  "version": "0.1.0",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://github.com/YOURUSER/hacs-acquevenete",
+  "issue_tracker": "https://github.com/YOURUSER/hacs-acquevenete/issues",
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "after_dependencies": ["recorder"]
+}

@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Acquevenete",
+        "description": "Inserisci il GUID dell'account che compare negli URL dell'API del portale, il tuo numero di fornitura e (facoltativo) il valore di pagina del week-chart.",
+        "data": {
+          "token": "GUID account (token)",
+          "supply_no": "Numero fornitura (es. REDACTED)",
+          "page": "Pagina week-chart"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Ri-autentica Acquevenete",
+        "description": "Il token è scaduto. Incolla un GUID account aggiornato.",
+        "data": {
+          "token": "GUID account (token)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Connessione non riuscita",
+      "invalid_auth": "Token non valido o scaduto",
+      "no_data": "Connesso, ma nessuna lettura restituita"
+    },
+    "abort": {
+      "already_configured": "Questa fornitura è già configurata",
+      "reauth_successful": "Ri-autenticazione riuscita"
+    }
+  }
+}
