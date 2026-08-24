@@ -6,7 +6,7 @@
         "description": "Enter the account GUID that appears in the portal API URLs, your supply number, and (optionally) the week-chart page value.",
         "data": {
           "token": "Account GUID (token)",
-          "supply_no": "Supply number (e.g. REDACTED)",
+          "supply_no": "Supply number (e.g. 12345678-1)",
           "page": "Week-chart page"
         }
       },

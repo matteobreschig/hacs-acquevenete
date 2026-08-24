@@ -24,8 +24,8 @@ self-service di Acquevenete e li porta in Home Assistant con **dettaglio giornal
 2. Apri gli strumenti sviluppatore (F12) → scheda **Network**.
 3. Naviga nella sezione consumi: vedrai chiamate del tipo
    `.../api/v1/supply-week-consumption-chart/<GUID>/<FORNITURA>/1/`.
-4. Il `<GUID>` (es. `REDACTED`) è il **token**.
-5. Il `<FORNITURA>` (es. `REDACTED`) è il **numero fornitura**.
+4. Il `<GUID>` (es. `00000000-0000-0000-0000-000000000000`) è il **token**.
+5. Il `<FORNITURA>` (es. `12345678-1`) è il **numero fornitura**.
 
 ## Installazione (HACS)
 

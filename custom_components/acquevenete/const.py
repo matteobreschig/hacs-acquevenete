@@ -7,7 +7,7 @@ DOMAIN = "acquevenete"
 
 # Config keys
 CONF_TOKEN = "token"          # the account GUID that appears in the API URLs
-CONF_SUPPLY = "supply_no"     # e.g. "REDACTED"
+CONF_SUPPLY = "supply_no"     # e.g. "12345678-1"
 CONF_PAGE = "page"            # trailing segment of the week-chart URL
 
 DEFAULT_PAGE = "1"

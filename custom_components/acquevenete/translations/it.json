@@ -6,7 +6,7 @@
         "description": "Inserisci il GUID dell'account che compare negli URL dell'API del portale, il tuo numero di fornitura e (facoltativo) il valore di pagina del week-chart.",
         "data": {
           "token": "GUID account (token)",
-          "supply_no": "Numero fornitura (es. REDACTED)",
+          "supply_no": "Numero fornitura (es. 12345678-1)",
           "page": "Pagina week-chart"
         }
       },
