@@ -1,0 +1,14 @@
+import_history:
+  name: Import history
+  description: >-
+    Backfill the full Acquevenete daily history onto a target statistic
+    (for example a utility_meter entity) so it appears in the Energy dashboard
+    without losing past data.
+  fields:
+    statistic_id:
+      name: Target statistic / entity id
+      description: The entity_id whose statistics should receive the history (e.g. the utility_meter).
+      required: true
+      example: sensor.acqua_energia
+      selector:
+        text:

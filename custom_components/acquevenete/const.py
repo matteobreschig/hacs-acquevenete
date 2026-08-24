@@ -24,3 +24,6 @@ SMART_METER_TYPE = "SMART METERING"
 ATTR_LAST_READING_DATE = "last_reading_date"
 ATTR_METER_SERIAL = "meter_serial"
 ATTR_SUPPLY_NO = "supply_no"
+
+SERVICE_IMPORT_HISTORY = "import_history"
+ATTR_STATISTIC_ID = "statistic_id"

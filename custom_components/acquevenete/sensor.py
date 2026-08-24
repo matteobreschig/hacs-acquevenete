@@ -62,6 +62,16 @@ class AcquaveneteMeterSensor(CoordinatorEntity[AcquaveneteCoordinator], SensorEn
             return None
         return self.coordinator.data.get("latest_value")
 
+    async def async_added_to_hass(self) -> None:
+        """Attach the historical statistics to this entity once its id is known."""
+        await super().async_added_to_hass()
+        self.coordinator.import_statistics(self.entity_id)
+
+    def _handle_coordinator_update(self) -> None:
+        # Keep statistics in sync (history + latest) on every refresh.
+        self.coordinator.import_statistics(self.entity_id)
+        super()._handle_coordinator_update()
+
     @property
     def extra_state_attributes(self) -> dict:
         data = self.coordinator.data or {}
@@ -69,7 +79,6 @@ class AcquaveneteMeterSensor(CoordinatorEntity[AcquaveneteCoordinator], SensorEn
             ATTR_SUPPLY_NO: self._supply_no,
             ATTR_LAST_READING_DATE: data.get("latest_date"),
             ATTR_METER_SERIAL: data.get("meter_serial"),
-            "statistic_id": data.get("statistic_id"),
         }
 
 

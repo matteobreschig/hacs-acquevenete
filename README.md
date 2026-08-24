@@ -41,6 +41,12 @@ Impostazioni → Dashboard → Energia → **Consumo acqua** → aggiungi la sta
 `acquevenete:<fornitura>_consumption` (per lo storico) oppure il sensore
 `total_increasing` (solo dati da adesso in poi).
 
+## Logo e icona
+
+Il logo sta nella cartella `custom_components/acquevenete/brand/` (meccanismo
+inline di HA ≥ 2026.3). Le immagini incluse sono **segnaposto generici**: vedi
+`brand/README.md` per sostituirle con il logo ufficiale nelle dimensioni corrette.
+
 ## Note e limiti
 
 - La granularità massima disponibile dal portale è **giornaliera** (1 m³). Non
