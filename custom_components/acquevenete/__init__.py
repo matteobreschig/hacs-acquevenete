@@ -10,11 +10,13 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AcquaveneteClient
+from .auth import AcquaveneteAuth
 from .const import (
     ATTR_STATISTIC_ID,
     CONF_PAGE,
+    CONF_PASSWORD,
     CONF_SUPPLY,
-    CONF_TOKEN,
+    CONF_USERNAME,
     DEFAULT_PAGE,
     DOMAIN,
     SERVICE_IMPORT_HISTORY,
@@ -50,9 +52,12 @@ def _register_services(hass: HomeAssistant) -> None:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Acquevenete from a config entry."""
     session = async_get_clientsession(hass)
+    auth = AcquaveneteAuth(
+        session, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
+    )
     client = AcquaveneteClient(
         session=session,
-        token=entry.data[CONF_TOKEN],
+        auth=auth,
         supply_no=entry.data[CONF_SUPPLY],
         page=entry.data.get(CONF_PAGE, DEFAULT_PAGE),
     )

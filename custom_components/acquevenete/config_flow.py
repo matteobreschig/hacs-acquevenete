@@ -1,4 +1,4 @@
-"""Config flow for Acquevenete."""
+"""Config flow for Acquevenete (username + password login)."""
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -10,10 +10,12 @@ from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AcquaveneteApiError, AcquaveneteAuthError, AcquaveneteClient
+from .auth import AcquaveneteAuth
 from .const import (
     CONF_PAGE,
+    CONF_PASSWORD,
     CONF_SUPPLY,
-    CONF_TOKEN,
+    CONF_USERNAME,
     DEFAULT_PAGE,
     DOMAIN,
 )
@@ -22,14 +24,15 @@ from .const import (
 class AcquaveneteConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the UI configuration."""
 
-    VERSION = 1
+    VERSION = 2
 
     async def _validate(self, data: dict[str, Any]) -> str | None:
-        """Return an error key or None if the credentials work."""
+        """Return an error key or None if login + data fetch work."""
         session = async_get_clientsession(self.hass)
+        auth = AcquaveneteAuth(session, data[CONF_USERNAME], data[CONF_PASSWORD])
         client = AcquaveneteClient(
             session=session,
-            token=data[CONF_TOKEN],
+            auth=auth,
             supply_no=data[CONF_SUPPLY],
             page=data.get(CONF_PAGE, DEFAULT_PAGE),
         )
@@ -46,7 +49,7 @@ class AcquaveneteConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
         if user_input is not None:
-            await self.async_set_unique_id(f"{user_input[CONF_SUPPLY]}")
+            await self.async_set_unique_id(user_input[CONF_SUPPLY])
             self._abort_if_unique_id_configured()
             error = await self._validate(user_input)
             if error:
@@ -59,7 +62,8 @@ class AcquaveneteConfigFlow(ConfigFlow, domain=DOMAIN):
 
         schema = vol.Schema(
             {
-                vol.Required(CONF_TOKEN): str,
+                vol.Required(CONF_USERNAME): str,
+                vol.Required(CONF_PASSWORD): str,
                 vol.Required(CONF_SUPPLY): str,
                 vol.Optional(CONF_PAGE, default=DEFAULT_PAGE): str,
             }
@@ -80,7 +84,7 @@ class AcquaveneteConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         entry = self._reauth_entry
         if user_input is not None:
-            new_data = {**entry.data, CONF_TOKEN: user_input[CONF_TOKEN]}
+            new_data = {**entry.data, **user_input}
             error = await self._validate(new_data)
             if error:
                 errors["base"] = error
@@ -89,8 +93,9 @@ class AcquaveneteConfigFlow(ConfigFlow, domain=DOMAIN):
                 await self.hass.config_entries.async_reload(entry.entry_id)
                 return self.async_abort(reason="reauth_successful")
 
+        schema = vol.Schema(
+            {vol.Required(CONF_USERNAME): str, vol.Required(CONF_PASSWORD): str}
+        )
         return self.async_show_form(
-            step_id="reauth_confirm",
-            data_schema=vol.Schema({vol.Required(CONF_TOKEN): str}),
-            errors=errors,
+            step_id="reauth_confirm", data_schema=schema, errors=errors
         )

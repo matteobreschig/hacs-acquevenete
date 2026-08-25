@@ -3,25 +3,27 @@
     "step": {
       "user": {
         "title": "Acquevenete",
-        "description": "Enter the account GUID that appears in the portal API URLs, your supply number, and (optionally) the week-chart page value.",
+        "description": "Enter your portal login (e-mail and password), your supply number, and optionally the week-chart page value. The webapi token is obtained automatically at login and refreshed when it expires.",
         "data": {
-          "token": "Account GUID (token)",
+          "username": "E-mail",
+          "password": "Password",
           "supply_no": "Supply number (e.g. 12345678-1)",
           "page": "Week-chart page"
         }
       },
       "reauth_confirm": {
         "title": "Re-authenticate Acquevenete",
-        "description": "The token has expired. Paste a fresh account GUID.",
+        "description": "Enter your portal credentials again.",
         "data": {
-          "token": "Account GUID (token)"
+          "username": "E-mail",
+          "password": "Password"
         }
       }
     },
     "error": {
       "cannot_connect": "Failed to connect",
-      "invalid_auth": "Invalid or expired token",
-      "no_data": "Connected, but no readings were returned"
+      "invalid_auth": "Invalid credentials",
+      "no_data": "Logged in, but no readings were returned"
     },
     "abort": {
       "already_configured": "This supply is already configured",

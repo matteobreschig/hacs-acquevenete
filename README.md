@@ -18,14 +18,21 @@ self-service di Acquevenete e li porta in Home Assistant con **dettaglio giornal
   aggiornata a ogni poll. È quella da aggiungere alla dashboard Acqua per avere
   subito lo storico invece di aspettare mesi.
 
-## Come ottenere GUID e numero fornitura
+## Credenziali e numero fornitura
 
-1. Accedi al portale `sol.acquevenete.it` dal browser.
-2. Apri gli strumenti sviluppatore (F12) → scheda **Network**.
-3. Naviga nella sezione consumi: vedrai chiamate del tipo
-   `.../api/v1/supply-week-consumption-chart/<GUID>/<FORNITURA>/1/`.
-4. Il `<GUID>` (es. `00000000-0000-0000-0000-000000000000`) è il **token**.
-5. Il `<FORNITURA>` (es. `12345678-1`) è il **numero fornitura**.
+L'integrazione fa il **login al posto tuo**: inserisci e-mail e password del
+portale. Il token webapi viene ricavato in automatico dopo il login (dal cookie
+`sol-<sessione>-at`) e rinnovato da solo quando scade — non devi più incollarlo
+a mano.
+
+Ti serve solo il **numero di fornitura** nel formato `12345678-1`. Lo trovi nella
+sezione consumi del portale, oppure dalla scheda Network del browser (F12) nelle
+chiamate `.../api/v1/supply-week-consumption-chart/<GUID>/<FORNITURA>/1/`: è il
+`<FORNITURA>`.
+
+> ⚠️ Le credenziali vengono salvate da Home Assistant in chiaro in
+> `.storage/core.config_entries` (standard per le integrazioni con login).
+> Tienile su un'istanza a cui accedi solo tu e non committarle mai.
 
 ## Installazione (HACS)
 
@@ -33,7 +40,7 @@ self-service di Acquevenete e li porta in Home Assistant con **dettaglio giornal
 2. Incolla l'URL del tuo repo GitHub, categoria **Integration**, aggiungi.
 3. Installa "Acquevenete", riavvia Home Assistant.
 4. Impostazioni → Dispositivi e servizi → **Aggiungi integrazione** → Acquevenete.
-5. Inserisci token e numero fornitura.
+5. Inserisci e-mail, password e numero fornitura.
 
 ## Dashboard Acqua
 
