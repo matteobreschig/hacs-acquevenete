@@ -49,9 +49,27 @@ def _register_services(hass: HomeAssistant) -> None:
     )
 
 
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrate old config entries to the current schema.
+
+    v1 stored a manually-pasted token; v2 uses username/password login. We can't
+    invent credentials, so we drop the stale token and mark the entry as v2. If
+    username/password are missing, HA will trigger the reauth flow on setup.
+    """
+    if entry.version < 2:
+        data = {k: v for k, v in entry.data.items() if k != "token"}
+        hass.config_entries.async_update_entry(entry, data=data, version=2)
+    return True
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Acquevenete from a config entry."""
     session = async_get_clientsession(hass)
+    if not entry.data.get(CONF_USERNAME) or not entry.data.get(CONF_PASSWORD):
+        # Migrated (or incomplete) entry without credentials -> ask for them.
+        from homeassistant.exceptions import ConfigEntryAuthFailed
+
+        raise ConfigEntryAuthFailed("Missing portal credentials")
     auth = AcquaveneteAuth(
         session, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
     )
