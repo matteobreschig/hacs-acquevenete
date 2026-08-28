@@ -1,54 +1,77 @@
 # Acquevenete per Home Assistant
 
-Integrazione custom (installabile via HACS) che legge i consumi acqua dal portale
-self-service di Acquevenete e li porta in Home Assistant con **dettaglio giornaliero**
-(risoluzione 1 m³), pronti per la dashboard Energia → Acqua.
+Integrazione custom (installabile via HACS) che porta i consumi idrici del
+portale self-service di Acquevenete dentro Home Assistant, con **dettaglio
+giornaliero** (risoluzione 1 m³), pronti per la dashboard Energia → Acqua.
 
-> ⚠️ Non ufficiale. Usa endpoint non documentati del portale, in cui il GUID
-> dell'account fa da chiave nell'URL. Può smettere di funzionare se Acquevenete
-> cambia le API o se il token scade.
+> ⚠️ **Non ufficiale.** Usa endpoint non documentati del portale
+> `sol.acquevenete.it`. Puo' smettere di funzionare se Acquevenete cambia il sito.
+> Nessuna affiliazione con Acquevenete.
 
-## Cosa crea
+## Cosa fa
 
-- **Sensore** `sensor.acquevenete_..._water_meter`: indice cumulativo del contatore
-  in m³, `state_class: total_increasing`, aggiornato ~1 volta al giorno. Utile per
-  automazioni, rilevamento perdite, lettura corrente.
-- **Statistica esterna** `acquevenete:<fornitura>_consumption`: l'intera serie
-  storica giornaliera dei consumi (somma), ricostruita dal contatore e mantenuta
-  aggiornata a ogni poll. È quella da aggiungere alla dashboard Acqua per avere
-  subito lo storico invece di aspettare mesi.
+- Effettua il **login al portale** con le tue credenziali e ricava da solo il
+  token della webapi (che ruota a ogni accesso), rinnovandolo quando scade.
+- Legge la telemetria giornaliera del contatore smart e la espone in due sensori.
+- Ricostruisce l'intero **storico giornaliero** e lo tiene aggiornato nelle
+  statistiche a lungo termine, cosi' la dashboard Energia mostra da subito tutta
+  la cronologia invece di partire da zero.
 
-## Credenziali e numero fornitura
+## Entita' create
 
-L'integrazione fa il **login al posto tuo**: inserisci e-mail e password del
-portale. Il token webapi viene ricavato in automatico dopo il login (dal cookie
-`sol-<sessione>-at`).
-
-Ti serve solo il **numero di fornitura** nel formato `12345678-1`. Lo trovi nella
-sezione consumi del portale.
+- `sensor.<nome>_water_meter` — indice cumulativo del contatore in m³,
+  `state_class: total_increasing`, aggiornato ~1 volta al giorno. È la sorgente
+  di verita' con lo storico completo attaccato alle proprie statistiche.
+- `sensor.<nome>_daily_consumption` — consumo dell'ultimo giorno disponibile in
+  m³. Espone come attributo `reference_date` la data a cui il valore si riferisce
+  (la telemetria puo' avere qualche giorno di ritardo, quindi non e' sempre
+  "oggi").
 
 ## Installazione (HACS)
 
-1. HACS → Integrazioni → menu ⋮ → **Repository personalizzati**.
-2. Incolla l'URL del tuo repo GitHub, categoria **Integration**, aggiungi.
-3. Installa "Acquevenete", riavvia Home Assistant.
-4. Impostazioni → Dispositivi e servizi → **Aggiungi integrazione** → Acquevenete.
-5. Inserisci e-mail, password e numero fornitura.
+1. HACS → menu ⋮ → **Repository personalizzati**.
+2. Aggiungi `https://github.com/matteobreschig/hacs-acquevenete`,
+   categoria **Integration**.
+3. Installa **Acquevenete** e riavvia Home Assistant.
+4. Impostazioni → Dispositivi e servizi → **Aggiungi integrazione** →
+   Acquevenete.
 
-## Dashboard Acqua
+## Configurazione
 
-Impostazioni → Dashboard → Energia → **Consumo acqua** → aggiungi la statistica
-`acquevenete:<fornitura>_consumption` (per lo storico) oppure il sensore
-`total_increasing` (solo dati da adesso in poi).
+L'integrazione fa il login al posto tuo: inserisci **e-mail** e **password** del
+portale. Il token webapi viene ricavato in automatico e rinnovato quando scade.
 
-## Note e limiti
+Ti serve solo il **codice fornitura** nel formato `12345678-1`. Lo trovi nella bolletta.
 
-- La granularità massima disponibile dal portale è **giornaliera** (1 m³). Non
-  esistono dati orari.
+## Dashboard Energia → Acqua
+
+Aggiungi in Impostazioni → Dashboard → Energia → **Consumo acqua** il sensore
+`..._water_meter`: contiene gia' lo storico completo. Da solo basta per una
+dashboard corretta.
+
+## Servizio `acquevenete.import_history`
+
+Ribalta l'intero storico giornaliero sulle statistiche a lungo termine di un
+`statistic_id` a tua scelta.
+
+```yaml
+action: acquevenete.import_history
+data:
+  statistic_id: sensor.<entita_target>
+```
+
+È idempotente: puoi rilanciarlo, riscrive lo stesso storico senza duplicare.
+Nota: la storia finisce nelle **statistiche**, non negli stati, quindi la vedi in
+Strumenti per sviluppatori → **Statistiche**, in una scheda *Statistics Graph* o
+nella dashboard Energia — non necessariamente nel valore live del sensore.
+
+## Limiti noti
+
+- Risoluzione massima **giornaliera** (1 m³): il portale non espone dati orari.
 - I dati giornalieri sono telemetria grezza (`SMART METERING`, non validata):
-  possono avere piccoli ritardi o correzioni rispetto alle letture di saldo
-  fatturate.
-- Il parametro `page` (default `1`) è il segmento finale dell'URL del week-chart.
-  Se noti giorni recenti mancanti, prova a cambiarlo.
-- Il cambio contatore (indice che riparte da 0) è gestito: `total_increasing` e il
-  calcolo dello storico trattano il calo come reset.
+  possono avere piccoli ritardi o correzioni rispetto alle letture di saldo.
+
+## Disclaimer
+
+Progetto personale, fornito "cosi' com'e'", senza garanzie. I marchi citati
+appartengono ai rispettivi proprietari.
