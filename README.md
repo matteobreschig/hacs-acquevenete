@@ -22,17 +22,10 @@ self-service di Acquevenete e li porta in Home Assistant con **dettaglio giornal
 
 L'integrazione fa il **login al posto tuo**: inserisci e-mail e password del
 portale. Il token webapi viene ricavato in automatico dopo il login (dal cookie
-`sol-<sessione>-at`) e rinnovato da solo quando scade — non devi più incollarlo
-a mano.
+`sol-<sessione>-at`).
 
 Ti serve solo il **numero di fornitura** nel formato `12345678-1`. Lo trovi nella
-sezione consumi del portale, oppure dalla scheda Network del browser (F12) nelle
-chiamate `.../api/v1/supply-week-consumption-chart/<GUID>/<FORNITURA>/1/`: è il
-`<FORNITURA>`.
-
-> ⚠️ Le credenziali vengono salvate da Home Assistant in chiaro in
-> `.storage/core.config_entries` (standard per le integrazioni con login).
-> Tienile su un'istanza a cui accedi solo tu e non committarle mai.
+sezione consumi del portale.
 
 ## Installazione (HACS)
 
@@ -47,12 +40,6 @@ chiamate `.../api/v1/supply-week-consumption-chart/<GUID>/<FORNITURA>/1/`: è il
 Impostazioni → Dashboard → Energia → **Consumo acqua** → aggiungi la statistica
 `acquevenete:<fornitura>_consumption` (per lo storico) oppure il sensore
 `total_increasing` (solo dati da adesso in poi).
-
-## Logo e icona
-
-Il logo sta nella cartella `custom_components/acquevenete/brand/` (meccanismo
-inline di HA ≥ 2026.3). Le immagini incluse sono **segnaposto generici**: vedi
-`brand/README.md` per sostituirle con il logo ufficiale nelle dimensioni corrette.
 
 ## Note e limiti
 
