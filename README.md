@@ -5,7 +5,7 @@ portale self-service di Acquevenete dentro Home Assistant, con **dettaglio
 giornaliero** (risoluzione 1 m³), pronti per la dashboard Energia → Acqua.
 
 > ⚠️ **Non ufficiale.** Usa endpoint non documentati del portale
-> `sol.acquevenete.it`. Puo' smettere di funzionare se Acquevenete cambia il sito.
+> `sol.acquevenete.it`. Può smettere di funzionare se Acquevenete cambia il sito.
 > Nessuna affiliazione con Acquevenete.
 
 ## Cosa fa
@@ -14,17 +14,17 @@ giornaliero** (risoluzione 1 m³), pronti per la dashboard Energia → Acqua.
   token della webapi (che ruota a ogni accesso), rinnovandolo quando scade.
 - Legge la telemetria giornaliera del contatore smart e la espone in due sensori.
 - Ricostruisce l'intero **storico giornaliero** e lo tiene aggiornato nelle
-  statistiche a lungo termine, cosi' la dashboard Energia mostra da subito tutta
+  statistiche a lungo termine, così la dashboard Energia mostra da subito tutta
   la cronologia invece di partire da zero.
 
-## Entita' create
+## Entità create
 
 - `sensor.<nome>_water_meter` — indice cumulativo del contatore in m³,
   `state_class: total_increasing`, aggiornato ~1 volta al giorno. È la sorgente
-  di verita' con lo storico completo attaccato alle proprie statistiche.
+  di verità con lo storico completo attaccato alle proprie statistiche.
 - `sensor.<nome>_daily_consumption` — consumo dell'ultimo giorno disponibile in
   m³. Espone come attributo `reference_date` la data a cui il valore si riferisce
-  (la telemetria puo' avere qualche giorno di ritardo, quindi non e' sempre
+  (la telemetria può avere qualche giorno di ritardo, quindi non è sempre
   "oggi").
 
 ## Installazione (HACS)
@@ -46,7 +46,7 @@ Ti serve solo il **codice fornitura** nel formato `12345678-1`. Lo trovi nella b
 ## Dashboard Energia → Acqua
 
 Aggiungi in Impostazioni → Dashboard → Energia → **Consumo acqua** il sensore
-`..._water_meter`: contiene gia' lo storico completo. Da solo basta per una
+`..._water_meter`: contiene già lo storico completo. Da solo basta per una
 dashboard corretta.
 
 ## Servizio `acquevenete.import_history`
@@ -107,5 +107,5 @@ qualsiasi comportamento strano.
 
 ## Disclaimer
 
-Progetto personale, fornito "cosi' com'e'", senza garanzie. I marchi citati
+Progetto personale, fornito "così com'è", senza garanzie. I marchi citati
 appartengono ai rispettivi proprietari.
