@@ -65,11 +65,45 @@ Nota: la storia finisce nelle **statistiche**, non negli stati, quindi la vedi i
 Strumenti per sviluppatori → **Statistiche**, in una scheda *Statistics Graph* o
 nella dashboard Energia — non necessariamente nel valore live del sensore.
 
+## Note tecniche
+
+Acquevenete non offre API pubbliche: l'integrazione si comporta come il browser
+quando accedi al portale self-service.
+
+- **Login.** Il portale è un'applicazione ASP.NET WebForms. Prima di inviare le
+  credenziali l'integrazione apre la pagina di login e ne legge i campi nascosti
+  (`__VIEWSTATE`, `__VIEWSTATEGENERATOR`, `__AntiXsrfToken`), che il server si
+  aspetta di ricevere indietro insieme a email e password.
+- **Token.** Ad accesso riuscito il portale imposta un cookie `sol-<sessione>-at`
+  il cui valore è un GUID: è il token che compare nel percorso delle chiamate
+  `/webapi/api/v1/...`. Cambia a ogni login, per questo dopo un po' smette di
+  funzionare.
+- **Rinnovo automatico.** Una sessione scaduta si riconosce da una risposta
+  diversa da 200, da un rimando HTML alla pagina di login oppure da dati vuoti.
+  In questi casi l'integrazione rifà il login una volta e ripete la richiesta.
+- **Credenziali errate.** Il portale non restituisce un errore esplicito: il
+  cookie del token semplicemente non arriva, ed è questo il segnale usato per
+  avvisarti.
+- **Dati.** I consumi arrivano dall'endpoint del grafico settimanale, che dentro
+  ogni settimana contiene una lettura giornaliera del contatore smart. Il
+  portale viene interrogato ogni 6 ore.
+- **Nessuna dipendenza esterna.** L'integrazione usa solo librerie già presenti
+  in Home Assistant.
+
 ## Limiti noti
 
 - Risoluzione massima **giornaliera** (1 m³): il portale non espone dati orari.
 - I dati giornalieri sono telemetria grezza (`SMART METERING`, non validata):
   possono avere piccoli ritardi o correzioni rispetto alle letture di saldo.
+
+## Come è stato sviluppato
+
+Questa integrazione è stata scritta con l'aiuto di Claude (Anthropic), un
+assistente basato sull'intelligenza artificiale. Ho definito io obiettivi e
+requisiti, ho analizzato il funzionamento del portale e ho provato ogni versione
+sulla mia installazione di Home Assistant con un contatore reale. Il codice
+generato è stato rivisto prima di ogni rilascio, ma segnala pure con una issue
+qualsiasi comportamento strano.
 
 ## Disclaimer
 
