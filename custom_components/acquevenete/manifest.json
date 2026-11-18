@@ -1,7 +1,7 @@
 {
   "domain": "acquevenete",
   "name": "Acquevenete",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "codeowners": ["@matteobreschig"],
   "config_flow": true,
   "documentation": "https://github.com/matteobreschig/hacs-acquevenete",

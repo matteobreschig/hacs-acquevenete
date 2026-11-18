@@ -4,6 +4,17 @@ from __future__ import annotations
 import logging
 
 from homeassistant.components.recorder.models import StatisticData, StatisticMetaData
+
+try:  # HA 2025.10+: metadata must declare mean_type and unit_class
+    from homeassistant.components.recorder.models import StatisticMeanType
+    from homeassistant.util.unit_conversion import VolumeConverter
+
+    _EXTRA_METADATA = {
+        "mean_type": StatisticMeanType.NONE,
+        "unit_class": VolumeConverter.UNIT_CLASS,
+    }
+except ImportError:  # older Home Assistant releases
+    _EXTRA_METADATA = {}
 from homeassistant.components.recorder.statistics import async_import_statistics
 from homeassistant.const import UnitOfVolume
 from homeassistant.core import HomeAssistant, callback
@@ -87,6 +98,7 @@ class AcquaveneteCoordinator(DataUpdateCoordinator[dict]):
                 source="recorder",  # internal statistics attached to the entity
                 statistic_id=statistic_id,
                 unit_of_measurement=UnitOfVolume.CUBIC_METERS,
+                **_EXTRA_METADATA,
             )
             async_import_statistics(self.hass, metadata, stats)
         except Exception:  # noqa: BLE001 - never let stats break the entity
