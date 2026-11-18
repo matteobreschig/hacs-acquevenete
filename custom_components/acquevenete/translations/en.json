@@ -29,5 +29,17 @@
       "already_configured": "This supply is already configured",
       "reauth_successful": "Re-authentication successful"
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Water price",
+        "description": "Used to build the cost history shown in the Energy dashboard (statistic `acquevenete:<supply>_cost`). Pick an entity holding the price per m³, or type a fixed price. The current price is applied to the whole history.",
+        "data": {
+          "price_entity": "Price entity (per m³)",
+          "price": "Fixed price per m³"
+        }
+      }
+    }
   }
 }

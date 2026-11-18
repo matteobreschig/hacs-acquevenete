@@ -7,11 +7,12 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfVolume
+from homeassistant.const import EntityCategory, UnitOfVolume
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from .const import (
     ATTR_LAST_READING_DATE,
@@ -32,6 +33,7 @@ async def async_setup_entry(
         [
             AcquaveneteMeterSensor(coordinator, entry),
             AcquaveneteDailyConsumptionSensor(coordinator, entry),
+            AcquaveneteLastReadingSensor(coordinator, entry),
         ]
     )
 
@@ -66,10 +68,12 @@ class AcquaveneteMeterSensor(CoordinatorEntity[AcquaveneteCoordinator], SensorEn
         """Attach the historical statistics to this entity once its id is known."""
         await super().async_added_to_hass()
         self.coordinator.import_statistics(self.entity_id)
+        self.coordinator.import_cost_statistics()
 
     def _handle_coordinator_update(self) -> None:
         # Keep statistics in sync (history + latest) on every refresh.
         self.coordinator.import_statistics(self.entity_id)
+        self.coordinator.import_cost_statistics()
         super()._handle_coordinator_update()
 
     @property
@@ -122,3 +126,36 @@ class AcquaveneteDailyConsumptionSensor(
             ATTR_SUPPLY_NO: self._supply_no,
             "reference_date": data.get("daily_consumption_date"),
         }
+
+
+class AcquaveneteLastReadingSensor(
+    CoordinatorEntity[AcquaveneteCoordinator], SensorEntity
+):
+    """Date of the most recent reading published by the portal.
+
+    The smart meter feed lags and sometimes stalls for days: this makes it easy
+    to alert when no new reading has arrived for a while.
+    """
+
+    _attr_has_entity_name = True
+    _attr_name = "Last reading"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: AcquaveneteCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{DOMAIN}_{coordinator.supply_no}_last_reading"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, coordinator.supply_no)},
+            name=f"Acquevenete {coordinator.supply_no}",
+            manufacturer="Acquevenete",
+            model="Smart water meter",
+        )
+
+    @property
+    def native_value(self):
+        date = (self.coordinator.data or {}).get("latest_date")
+        parsed = dt_util.parse_datetime(date) if date else None
+        if parsed is not None and parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=dt_util.UTC)
+        return parsed

@@ -19,6 +19,13 @@ BASE_URL = "https://sol.acquevenete.it/webapi/api/v1"
 LOGIN_URL = "https://sol.acquevenete.it/login.aspx"
 HOME_URL = "https://sol.acquevenete.it/index.aspx"
 
+# Options
+CONF_PRICE = "price"                # fixed water price per m3
+CONF_PRICE_ENTITY = "price_entity"  # or an entity holding the price per m3
+
+# Seconds before a portal request is abandoned.
+REQUEST_TIMEOUT = 30
+
 # Poll every 6h: the source data only changes ~once per day.
 SCAN_INTERVAL = timedelta(hours=6)
 

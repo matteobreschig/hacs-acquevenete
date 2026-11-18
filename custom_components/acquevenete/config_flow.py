@@ -6,7 +6,14 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
+from homeassistant.core import callback
+from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AcquaveneteApiError, AcquaveneteAuthError, AcquaveneteClient
@@ -14,6 +21,8 @@ from .auth import AcquaveneteAuth
 from .const import (
     CONF_PAGE,
     CONF_PASSWORD,
+    CONF_PRICE,
+    CONF_PRICE_ENTITY,
     CONF_SUPPLY,
     CONF_USERNAME,
     DEFAULT_PAGE,
@@ -25,6 +34,11 @@ class AcquaveneteConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the UI configuration."""
 
     VERSION = 2
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        return AcquaveneteOptionsFlow()
 
     async def _validate(self, data: dict[str, Any]) -> str | None:
         """Return an error key or None if login + data fetch work."""
@@ -99,3 +113,42 @@ class AcquaveneteConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="reauth_confirm", data_schema=schema, errors=errors
         )
+
+
+class AcquaveneteOptionsFlow(OptionsFlow):
+    """Water price used to build the cost statistic for the Energy dashboard."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            # Drop empty values so "no price" really means no cost statistic.
+            data = {k: v for k, v in user_input.items() if v not in (None, "")}
+            return self.async_create_entry(data=data)
+
+        options = self.config_entry.options
+        price_entity = options.get(CONF_PRICE_ENTITY)
+        price = options.get(CONF_PRICE)
+        schema = vol.Schema(
+            {
+                vol.Optional(
+                    CONF_PRICE_ENTITY,
+                    description={"suggested_value": price_entity},
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain=["input_number", "number", "sensor"]
+                    )
+                ),
+                vol.Optional(
+                    CONF_PRICE, description={"suggested_value": price}
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=100,
+                        step=0.001,
+                        mode=selector.NumberSelectorMode.BOX,
+                    )
+                ),
+            }
+        )
+        return self.async_show_form(step_id="init", data_schema=schema)

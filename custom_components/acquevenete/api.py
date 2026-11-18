@@ -13,14 +13,21 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from aiohttp import ClientError, ClientSession
+from aiohttp import ClientError, ClientSession, ClientTimeout
 
-from .const import BASE_URL, SMART_METER_TYPE
+from .const import BASE_URL, REQUEST_TIMEOUT, SMART_METER_TYPE
 
 if TYPE_CHECKING:
     from .auth import AcquaveneteAuth
 
 _LOGGER = logging.getLogger(__name__)
+
+TIMEOUT = ClientTimeout(total=REQUEST_TIMEOUT)
+
+
+def redact(text: str, secret: str | None) -> str:
+    """Hide the session token, which lives in the URL path, from messages/logs."""
+    return text.replace(secret, "***") if secret else text
 
 
 class AcquaveneteAuthError(Exception):
@@ -79,18 +86,24 @@ class AcquaveneteClient:
         """Return parsed JSON, or None if the response looks unauthenticated."""
         url = f"{BASE_URL}/{path_template.format(token=token)}"
         try:
-            async with self._session.get(url) as resp:
+            async with self._session.get(url, timeout=TIMEOUT) as resp:
                 if resp.status in (401, 403):
                     return None
                 if resp.status != 200:
-                    raise AcquaveneteApiError(f"HTTP {resp.status} for {url}")
+                    raise AcquaveneteApiError(
+                        f"HTTP {resp.status} for {redact(url, token)}"
+                    )
                 ctype = resp.headers.get("Content-Type", "")
                 if "json" not in ctype:
                     # Portal served an HTML login page instead of JSON.
                     return None
                 return await resp.json(content_type=None)
+        except TimeoutError as err:
+            raise AcquaveneteApiError(
+                f"Timeout after {REQUEST_TIMEOUT}s for {redact(url, token)}"
+            ) from err
         except ClientError as err:
-            raise AcquaveneteApiError(str(err)) from err
+            raise AcquaveneteApiError(redact(str(err), token)) from err
 
     async def async_validate(self) -> bool:
         """Cheap call used by the config flow to check credentials + supply."""

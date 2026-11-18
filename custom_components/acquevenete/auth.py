@@ -18,7 +18,7 @@ import re
 
 from aiohttp import ClientError, ClientSession
 
-from .api import AcquaveneteApiError, AcquaveneteAuthError
+from .api import TIMEOUT, AcquaveneteApiError, AcquaveneteAuthError
 from .const import HOME_URL, LOGIN_URL
 
 _LOGGER = logging.getLogger(__name__)
@@ -48,10 +48,10 @@ class AcquaveneteAuth:
     async def async_login(self) -> tuple[str, str | None]:
         """Return (token, internal_id). Raises AcquaveneteAuthError on failure."""
         try:
-            async with self._session.get(LOGIN_URL) as resp:
+            async with self._session.get(LOGIN_URL, timeout=TIMEOUT) as resp:
                 html = await resp.text()
-        except ClientError as err:
-            raise AcquaveneteApiError(f"GET login failed: {err}") from err
+        except (ClientError, TimeoutError) as err:
+            raise AcquaveneteApiError(f"GET login failed: {err!r}") from err
 
         viewstate = _hidden(html, "__VIEWSTATE")
         generator = _hidden(html, "__VIEWSTATEGENERATOR")
@@ -69,13 +69,13 @@ class AcquaveneteAuth:
             "spidId": "",
         }
         try:
-            async with self._session.post(LOGIN_URL, data=payload) as resp:
+            async with self._session.post(LOGIN_URL, data=payload, timeout=TIMEOUT) as resp:
                 await resp.read()
             # Touch the home page so the app finalises its session cookies.
-            async with self._session.get(HOME_URL) as resp:
+            async with self._session.get(HOME_URL, timeout=TIMEOUT) as resp:
                 await resp.read()
-        except ClientError as err:
-            raise AcquaveneteApiError(f"POST login failed: {err}") from err
+        except (ClientError, TimeoutError) as err:
+            raise AcquaveneteApiError(f"POST login failed: {err!r}") from err
 
         token, internal_id = self._extract_from_cookies()
         if not token:
