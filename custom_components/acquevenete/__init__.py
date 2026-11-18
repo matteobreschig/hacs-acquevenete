@@ -8,6 +8,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.event import async_track_state_change_event
 
 from .api import AcquaveneteClient
 from .auth import AcquaveneteAuth
@@ -80,12 +81,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         page=entry.data.get(CONF_PAGE, DEFAULT_PAGE),
     )
 
-    coordinator = AcquaveneteCoordinator(hass, client, entry.data[CONF_SUPPLY])
+    coordinator = AcquaveneteCoordinator(hass, client, entry.data[CONF_SUPPLY], entry)
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_async_reload))
+    if coordinator.price_entity:
+        # Recompute the cost history whenever the price changes.
+        entry.async_on_unload(
+            async_track_state_change_event(
+                hass,
+                [coordinator.price_entity],
+                lambda _event: coordinator.import_cost_statistics(),
+            )
+        )
     _register_services(hass)
     return True
 

@@ -29,5 +29,17 @@
       "already_configured": "Questa fornitura è già configurata",
       "reauth_successful": "Ri-autenticazione riuscita"
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Prezzo dell'acqua",
+        "description": "Serve a creare lo storico dei costi mostrato nella scheda Energia (statistica `acquevenete:<supply>_cost`). Scegli un'entità con il prezzo al m³ oppure scrivi un prezzo fisso. Il prezzo attuale viene applicato a tutto lo storico.",
+        "data": {
+          "price_entity": "Entità con il prezzo (al m³)",
+          "price": "Prezzo fisso al m³"
+        }
+      }
+    }
   }
 }
