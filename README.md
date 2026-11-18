@@ -26,6 +26,9 @@ giornaliero** (risoluzione 1 m³), pronti per la dashboard Energia → Acqua.
   m³. Espone come attributo `reference_date` la data a cui il valore si riferisce
   (la telemetria può avere qualche giorno di ritardo, quindi non è sempre
   "oggi").
+- `sensor.<nome>_last_reading` — data dell'ultima lettura pubblicata dal portale
+  (entità diagnostica, `device_class: timestamp`). Utile per un'automazione che
+  avvisa se il contatore non manda dati da qualche giorno.
 
 ## Installazione (HACS)
 
@@ -48,6 +51,23 @@ Ti serve solo il **codice fornitura** nel formato `12345678-1`. Lo trovi nella b
 Aggiungi in Impostazioni → Dashboard → Energia → **Consumo acqua** il sensore
 `..._water_meter`: contiene già lo storico completo. Da solo basta per una
 dashboard corretta.
+
+### Costo dell'acqua
+
+Il calcolo dei costi della dashboard Energia ("usa un prezzo" / "usa un'entità
+con il prezzo") segue solo i cambi di stato in tempo reale: con le letture
+caricate a posteriori resta sempre a 0 €. Per avere i costi:
+
+1. Impostazioni → Dispositivi e servizi → Acquevenete → **Configura**: scegli
+   un'entità con il prezzo al m³ (per esempio un `input_number`) oppure scrivi
+   un prezzo fisso.
+2. L'integrazione crea la statistica `acquevenete:<fornitura>_cost`
+   (consumo × prezzo, con tutto lo storico) e la ricalcola quando il prezzo cambia.
+3. In Energia → Consumo acqua → modifica il contatore → **Usa una statistica
+   che tiene traccia dei costi totali** → scegli quella statistica.
+
+Il prezzo attuale viene applicato a tutto lo storico: le tariffe a scaglioni e
+le quote fisse della bolletta non sono considerate.
 
 ## Servizio `acquevenete.import_history`
 
